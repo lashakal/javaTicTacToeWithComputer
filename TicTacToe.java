@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Scanner;
 
 public class TicTacToe {
@@ -10,8 +11,13 @@ public class TicTacToe {
 
         while (winner == '\0') {
             displayBoard();
-            getPlayerMove();
-            winner = checkWinner();
+            if (currentPlayer == 'X') {
+                getPlayerMove();
+                winner = checkWinner('X');
+            } else {
+                getComputerMove();
+                winner = checkWinner('O');
+            }
             switchPlayer();
         }
 
@@ -62,6 +68,62 @@ public class TicTacToe {
         board[row][col] = currentPlayer;
     }
 
+    private static void getComputerMove() {
+        // Simple AI to choose next move
+        int[] move = findBestMove();
+        board[move[0]][move[1]] = currentPlayer;
+        System.out.println("Computer plays O at (" + move[0] + ", " + move[1] + ")");
+    }
+
+    private static int[] findBestMove() {
+        // Check if a win is possible
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ') {
+                    board[i][j] = 'O';
+                    if (checkWinner('O') == 'O') {
+                        board[i][j] = ' ';
+                        return new int[]{i, j};
+                    }
+                    board[i][j] = ' ';
+                }
+            }
+        }
+
+        // Try to block X from winning if a win is not possible
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ') {
+                    board[i][j] = 'X';
+                    if (checkWinner('X') == 'X') {
+                        board[i][j] = ' ';
+                        return new int[]{i, j};
+                    }
+                    board[i][j] = ' ';
+                }
+            }
+        }
+
+        // Prioritize corners and center
+        int[][] preferredMoves = {{0, 0}, {0, 2}, {2, 0}, {2, 2}, {1, 1}};
+        for (int[] move : preferredMoves) {
+            if (board[move[0]][move[1]] == ' ') {
+                return new int[]{move[0], move[1]};
+            }
+        }
+
+        // Pick first available move
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (board[i][j] == ' ') {
+                    return new int[]{i, j};
+                }
+            }
+        }
+
+        return new int[]{-1, -1};   // fallback value
+    }
+
     private static boolean isValidMove(int row, int col) {
         if (row < 0 || row >= 3 || col < 0 || col >= 3 || board[row][col] != ' ') {
             System.out.println("Invalid move! Try again.");
@@ -70,21 +132,21 @@ public class TicTacToe {
         return true;
     }
 
-    private static char checkWinner() {
+    private static char checkWinner(char player) {
         // Check rows, columns, and diagonals
         for (int i = 0; i < 3; i++) {
-            if (board[i][0] == currentPlayer && board[i][1] == currentPlayer && board[i][2] == currentPlayer) {
-                return currentPlayer; // Row win
+            if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
+                return player; // Row win
             }
-            if (board[0][i] == currentPlayer && board[1][i] == currentPlayer && board[2][i] == currentPlayer) {
-                return currentPlayer; // Column win
+            if (board[0][i] == player && board[1][i] == player && board[2][i] == player) {
+                return player; // Column win
             }
         }
-        if (board[0][0] == currentPlayer && board[1][1] == currentPlayer && board[2][2] == currentPlayer) {
-            return currentPlayer; // Diagonal win
+        if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
+            return player; // Diagonal win
         }
-        if (board[0][2] == currentPlayer && board[1][1] == currentPlayer && board[2][0] == currentPlayer) {
-            return currentPlayer; // Diagonal win
+        if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
+            return player; // Diagonal win
         }
 
         // Check for a draw
